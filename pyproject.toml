@@ -1,0 +1,20 @@
+[project]
+name = "insighttasklab"
+version = "0.1.0"
+requires-python = "==3.12.*"
+dependencies = []
+
+[tool.uv.workspace]
+members = ["backend"]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.0",
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+]
+
+[tool.mypy]
+files = ["backend"]
+python_version = "3.12"
+ignore_missing_imports = true
