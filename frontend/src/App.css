@@ -1,0 +1,109 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #1e1e1e;
+}
+
+.app {
+  min-height: 100vh;
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+.header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #252526;
+  border-bottom: 1px solid #3f3f46;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.header button {
+  display: inline-block;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  background: #0078d4;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.header button:hover {
+  background: #106ebe;
+}
+
+.header button:disabled {
+  background: #555555;
+  cursor: not-allowed;
+}
+
+.main {
+  padding: 20px;
+}
+
+.editor-section {
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.stdin-section,
+.output-section {
+  margin-top: 20px;
+}
+
+.stdin-section h2,
+.output-section h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.stdin-section textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  resize: vertical;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  outline: none;
+  background: #252526;
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.stdin-section textarea:focus {
+  border-color: #0078d4;
+}
+
+.output-section pre {
+  min-height: 100px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid #3f3f46;
+  border-radius: 6px;
+  background: #252526;
+  color: #ffffff;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
