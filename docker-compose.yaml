@@ -15,5 +15,96 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app/backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=${DB_NAME:-insighttasklab}
+      - DB_USER=${DB_USER:-app}
+      - DB_PASSWORD=${DB_PASSWORD:-app}
+      - JUDGE0_URL=http://judge0-server:2358
+    depends_on:
+      db:
+        condition: service_healthy
+      judge0-server:
+        condition: service_started
+
+  judge0-server:
+    build:
+      context: ./judge0
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    ports:
+      - "2358:2358"
+    privileged: true
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0_secret
+      - POSTGRES_DB=judge0
+      - JUDGE0_ENABLE_CGROUPS=false
+      - ENABLE_CGROUPS=false
+      - ENABLE_ISOLATE=false
+      - ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=true
+      - ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+      - judge0_box:/box
+    depends_on:
+      - judge0-db
+      - judge0-redis
+
+  judge0-worker:
+    build:
+      context: ./judge0
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    cgroup: host
+    command: ["sh", "-c", "QUEUE=* bundle exec rake resque:work"]
+    privileged: true
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0_secret
+      - POSTGRES_DB=judge0
+      - JUDGE0_ENABLE_CGROUPS=false
+      - ENABLE_CGROUPS=false
+      - ENABLE_ISOLATE=false
+      - ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=true
+      - ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+      - judge0_box:/box
+    depends_on:
+      - judge0-db
+      - judge0-redis
+
+  judge0-db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0_secret
+      - POSTGRES_DB=judge0
+    volumes:
+      - judge0_db_data:/var/lib/postgresql/data
+
+  judge0-redis:
+    image: redis:6.0-alpine
+
 volumes:
   postgres_data:
+  judge0_db_data:
+  judge0_box:

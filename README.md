@@ -8,35 +8,71 @@ Web page that analyzing user reactions (facial expressions, keystroke patterns, 
 InsightTaskLab/
 ├── backend/                 # Django app, API, DB models
 │   └── emotion_detection/   # emotion recognition (DeepFace / FER / Py-Feat)
-├── sandbox/                 # isolated C/C++ code execution (kept separate for security)
+├── judge0/                  # Local Judge0 image and persistent configuration
 ├── frontend/                # UI (code editor, camera/keyboard/mouse capture)
 ├── pyproject.toml           # root uv workspace (backend + sandbox)
 ├── uv.lock
-├── docker-compose.yaml      # Postgres
+├── docker-compose.yaml      # Application, PostgreSQL and Judge0 services
 ├── .env.example             # template for required env vars
 └── .pre-commit-config.yaml
 ```
 
 ## Setup
 
-```bash
-# 1. install dependencies (workspace: backend + sandbox)
+Install Python dependencies
+
+~~~bash
 uv sync --all-packages
+~~~
 
-# 2. create your local env file
+Create the local environment file:
+
+~~~bash
 cp .env.example .env
+~~~
+Adjust the `.env` file if necessary.
 
-# 3. start the database
-docker-compose up -d db
+Install Node.js 22+
 
-# 4. run migrations and start the backend
-cd backend
-uv run manage.py migrate
-uv run manage.py createsuperuser
-uv run manage.py runserver
-```
+Choose the installation method appropriate for your operating system:
 
-Admin panel: http://127.0.0.1:8000/admin/
+* **Using nvm (Recommended for Linux / macOS / WSL):**
+  ~~~bash
+  nvm install 22
+  nvm use 22
+  ~~~
+* **macOS (via Homebrew):**
+  ~~~bash
+  brew install node@22
+  # Ensure it's in your PATH (add to ~/.zshrc if needed):
+  export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
+  ~~~
+* **Other systems:** Download the installer directly from [nodejs.org](https://nodejs.org/).
+
+Install frontend dependencies
+
+~~~bash
+cd frontend
+npm install
+cd ..
+~~~
+
+Start Docker services
+
+From the project root, start the containers in detached mode:
+
+~~~bash
+docker compose up -d
+~~~
+
+The application and services will be available at:
+* **Frontend:** `http://localhost:5173/`
+* **Django Backend:** `http://localhost:8000/`
+* **Django Admin:** `http://localhost:8000/admin/`
+
+Verify the application
+
+Open `http://localhost:5173/` in your browser.
 
 ## Code quality
 
