@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-insighttasklab}
       POSTGRES_USER: ${DB_USER:-app}
@@ -13,7 +14,71 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-app} -d ${DB_NAME:-insighttasklab}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  piston:
+    image: ghcr.io/engineer-man/piston
+    platform: linux/amd64
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_data:/piston
+    tmpfs:
+      - /tmp:exec
+    environment:
+      PISTON_MAX_CONCURRENT_JOBS: 64
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:2000/api/v2/runtimes', res => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  piston-init:
+    image: python:3.12-slim
+    restart: "no"
+    depends_on:
+      piston:
+        condition: service_healthy
+    environment:
+      PISTON_URL: http://piston:2000
+    volumes:
+      - ./install_runtime.py:/app/install_runtime.py:ro
+    command:
+      ["python", "-u", "/app/install_runtime.py"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      piston-init:
+        condition: service_completed_successfully
+    environment:
+      DB_NAME: ${DB_NAME:-insighttasklab}
+      DB_USER: ${DB_USER:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-app}
+      DB_HOST: db
+      DB_PORT: 5432
+      PISTON_URL: http://piston:2000
+    ports:
+      - "8000:8000"
+    command:
+      [
+        "sh",
+        "-c",
+        "python manage.py migrate && python manage.py runserver 0.0.0.0:8000",
+      ]
 
 volumes:
   postgres_data:
+  piston_data:

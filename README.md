@@ -8,11 +8,12 @@ Web page that analyzing user reactions (facial expressions, keystroke patterns, 
 InsightTaskLab/
 ├── backend/                 # Django app, API, DB models
 │   └── emotion_detection/   # emotion recognition (DeepFace / FER / Py-Feat)
-├── sandbox/                 # isolated C/C++ code execution (kept separate for security)
 ├── frontend/                # UI (code editor, camera/keyboard/mouse capture)
-├── pyproject.toml           # root uv workspace (backend + sandbox)
+├── install_runtime.py       # Piston runtime initialization
+├── pyproject.toml           # root uv workspace backend
 ├── uv.lock
-├── docker-compose.yaml      # Postgres
+├── Dockerfile               # backend Docker image
+├── docker-compose.yaml      # application services
 ├── .env.example             # template for required env vars
 └── .pre-commit-config.yaml
 ```
@@ -26,17 +27,36 @@ uv sync --all-packages
 # 2. create your local env file
 cp .env.example .env
 
-# 3. start the database
-docker-compose up -d db
-
-# 4. run migrations and start the backend
-cd backend
-uv run manage.py migrate
-uv run manage.py createsuperuser
-uv run manage.py runserver
+# 3. start the entire project
+docker compose up --build
 ```
 
 Admin panel: http://127.0.0.1:8000/admin/
+
+Piston: http://127.0.0.1:2000/
+
+
+## Piston and C++ runtime
+Available Piston runtimes can be checked with:
+curl http://localhost:2000/api/v2/runtimes
+
+To test C++ execution, use the Piston /api/v2/execute endpoint.
+
+For example:
+```bash
+curl -s http://localhost:2000/api/v2/execute \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "language": "c++",
+    "version": "10.2.0",
+    "files": [
+      {
+        "name": "main.cpp",
+        "content": "#include <iostream>\nint main() { std::cout << \"Hello World!\\n\"; return 0; }"
+      }
+    ]
+  }'
+```
 
 ## Code quality
 
