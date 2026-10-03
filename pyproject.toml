@@ -2,7 +2,10 @@
 name = "insighttasklab"
 version = "0.1.0"
 requires-python = "==3.12.*"
-dependencies = []
+dependencies = [
+    "djangorestframework-stubs>=3.18.1",
+    "httpx>=0.28.1",
+]
 
 [tool.uv.workspace]
 members = ["backend"]
