@@ -8,6 +8,7 @@ COPY backend/pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-cache
 
 COPY backend /app/backend
+COPY install_runtime.py /app/install_runtime.py
 
 WORKDIR /app/backend
 

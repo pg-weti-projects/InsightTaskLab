@@ -41,17 +41,16 @@ services:
       start_period: 10s
 
   piston-init:
-    image: python:3.12-slim
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: "no"
     depends_on:
       piston:
         condition: service_healthy
     environment:
       PISTON_URL: http://piston:2000
-    volumes:
-      - ./install_runtime.py:/app/install_runtime.py:ro
-    command:
-      ["python", "-u", "/app/install_runtime.py"]
+    command: [ "python", "/app/install_runtime.py" ]
 
   backend:
     build:

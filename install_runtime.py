@@ -1,24 +1,27 @@
-import json
 import os
 import time
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+
+import httpx
 
 PISTON_URL = os.environ["PISTON_URL"].rstrip("/")
 
 
-def api(path, payload=None, timeout=5):
-    body = None if payload is None else json.dumps(payload).encode()
-    request = Request(
-        f"{PISTON_URL}/api/v2/{path}",
-        data=body,
-        headers={"Content-Type": "application/json"},
-    )
-    with urlopen(request, timeout=timeout) as response:
-        return json.loads(response.read())
+def wait_for_piston() -> list[dict]:
+    print("Waiting for the Piston API...")
+    deadline = time.monotonic() + 120
+
+    while True:
+        try:
+            response = httpx.get(f"{PISTON_URL}/api/v2/runtimes", timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPError:
+            if time.monotonic() >= deadline:
+                raise SystemExit("Timed out waiting for the Piston API")
+            time.sleep(1)
 
 
-def has_c_and_cpp(runtimes):
+def has_c_and_cpp(runtimes: list[dict]) -> bool:
     languages = set()
     for runtime in runtimes:
         languages.add(runtime["language"])
@@ -26,26 +29,31 @@ def has_c_and_cpp(runtimes):
     return {"c", "c++"}.issubset(languages)
 
 
-print("Loading API Pistona...")
-deadline = time.monotonic() + 120
+def install_gcc() -> None:
+    print("Installing gcc (this may take a while)...")
+    response = httpx.post(
+        f"{PISTON_URL}/api/v2/packages",
+        json={"language": "gcc", "version": "10.2.0"},
+        timeout=1000,
+    )
+    response.raise_for_status()
 
-while True:
-    try:
-        runtimes = api("runtimes", timeout=10)
-        break
-    except (URLError, TimeoutError, ConnectionError):
-        if time.monotonic() >= deadline:
-            raise SystemExit("Timed out for API Pistona loading")
-        time.sleep(1)
-if has_c_and_cpp(runtimes):
-    print("Pistona is already installed")
-else:
-    print("The first installation of GCC. It may take a while...")
-    api("packages", {"language": "gcc", "version": "10.2.0"}, timeout=12000)
 
-    runtimes = api("runtimes")
+def main() -> None:
+    runtimes = wait_for_piston()
 
+    if has_c_and_cpp(runtimes):
+        print("gcc/c++ already installed.")
+        return
+
+    install_gcc()
+
+    runtimes = httpx.get(f"{PISTON_URL}/api/v2/runtimes", timeout=10).json()
     if not has_c_and_cpp(runtimes):
-        raise SystemExit("The first installation of GCC failed")
+        raise SystemExit("gcc installation did not register in /runtimes")
 
-    print("Pistona is now installed")
+    print("gcc installed successfully.")
+
+
+if __name__ == "__main__":
+    main()
