@@ -63,6 +63,7 @@ services:
       piston-init:
         condition: service_completed_successfully
     environment:
+      SECRET_KEY: ${SECRET_KEY} 
       DB_NAME: ${DB_NAME:-insighttasklab}
       DB_USER: ${DB_USER:-app}
       DB_PASSWORD: ${DB_PASSWORD:-app}
