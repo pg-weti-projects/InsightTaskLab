@@ -35,6 +35,22 @@ Admin panel: http://127.0.0.1:8000/admin/
 
 Piston: http://127.0.0.1:2000/
 
+## Frontend
+
+The frontend is **not** containerized - run it directly with Node for a
+faster dev loop (hot reload, devtools) while the backend services run in
+Docker as above.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173/.
+
+The frontend calls the backend at `http://localhost:8000`, so
+`docker compose up` must already be running
 
 ## Piston and C++ runtime
 Available Piston runtimes can be checked with:
