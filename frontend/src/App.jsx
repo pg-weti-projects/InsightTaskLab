@@ -16,9 +16,12 @@ function App() {
   }
 
   async function handleRun() {
+    if (!editorRef.current) {
+      setOutput({ stderr: "Editor is not ready yet." });
+      return;
+    }
     const sourceCode = editorRef.current.getValue();
     setLoading(true);
-    setOutput(null);
 
     try {
       const response = await fetch("http://localhost:8000/api/code-execution/run/", {
