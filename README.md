@@ -41,6 +41,26 @@ The frontend is **not** containerized - run it directly with Node for a
 faster dev loop (hot reload, devtools) while the backend services run in
 Docker as above.
 
+### Installing npm
+
+**macOS (Homebrew):**
+```bash
+brew install node
+```
+
+**Windows / Linux:** download the LTS installer from
+[nodejs.org](https://nodejs.org/) and run it, or use a version manager
+like [nvm](https://github.com/nvm-sh/nvm):
+```bash
+nvm install --lts
+```
+
+Verify the install:
+```bash
+node -v
+npm -v
+```
+### Running the frontend
 ```bash
 cd frontend
 npm install
