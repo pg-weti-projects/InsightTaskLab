@@ -14,4 +14,4 @@ WORKDIR /app/backend
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "config.wsgi:application", "--config", "gunicorn.conf.py"]
