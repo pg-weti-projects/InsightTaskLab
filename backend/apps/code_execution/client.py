@@ -12,12 +12,17 @@ import httpx
 from apps.code_execution.schemas import ExecutionResult
 
 PISTON_URL = os.environ.get("PISTON_URL", "http://localhost:2000")
+PISTON_TIMEOUT = float(os.environ.get("PISTON_TIMEOUT", "60"))
 
 
 class ExecutionClient:
     """Thin wrapper around the Piston /execute endpoint."""
 
-    def __init__(self, base_url: str = PISTON_URL, timeout: float = 15.0) -> None:
+    def __init__(
+        self,
+        base_url: str = PISTON_URL,
+        timeout: float = PISTON_TIMEOUT,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
