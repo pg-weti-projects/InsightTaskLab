@@ -28,7 +28,7 @@ services:
     tmpfs:
       - /tmp:exec
     environment:
-      PISTON_MAX_CONCURRENT_JOBS: 64
+      PISTON_MAX_CONCURRENT_JOBS: 8
     healthcheck:
       test:
         [
@@ -63,20 +63,21 @@ services:
       piston-init:
         condition: service_completed_successfully
     environment:
-      SECRET_KEY: ${SECRET_KEY} 
+      SECRET_KEY: ${SECRET_KEY}
       DB_NAME: ${DB_NAME:-insighttasklab}
       DB_USER: ${DB_USER:-app}
       DB_PASSWORD: ${DB_PASSWORD:-app}
       DB_HOST: db
       DB_PORT: 5432
       PISTON_URL: http://piston:2000
+      PISTON_TIMEOUT: 60
     ports:
       - "8000:8000"
     command:
       [
         "sh",
         "-c",
-        "python manage.py migrate && python manage.py runserver 0.0.0.0:8000",
+        "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --config gunicorn.conf.py",
       ]
 
 volumes:

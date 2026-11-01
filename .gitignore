@@ -24,3 +24,6 @@ dmypy.json
 
 # env
 .env
+
+# Django collectstatic output
+backend/staticfiles/
